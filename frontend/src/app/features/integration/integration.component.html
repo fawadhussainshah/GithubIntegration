@@ -1,0 +1,8 @@
+<h2>GitHub Integration</h2>
+<div *ngIf="isConnected">
+  ✅ Connected on: {{ connectedDate }} <br>
+  <button mat-raised-button color="warn" (click)="remove()">Remove Integration</button>
+</div>
+<div *ngIf="!isConnected">
+  <button mat-raised-button color="primary" (click)="connect()">Connect to GitHub</button>
+</div>

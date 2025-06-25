@@ -144,16 +144,20 @@ exports.searchGitHubData = async (req, res) => {
   try {
     const { entity, q = '', page = 0, pageSize = 10 } = req.query;
 
-    if (!entity || !collectionMap[entity.toLowerCase()]) {
+    const entityKey = entity.toLowerCase();
+    if (!collectionMap[entityKey]) {
       return res.status(400).json({ message: 'Invalid or missing entity type' });
     }
 
-    const Model = collectionMap[entity.toLowerCase()];
-    const regex = new RegExp(q, 'i');
+    const Model = collectionMap[entityKey];
+    const regex = q ? new RegExp(q, 'i') : null;
 
     const sampleDoc = await Model.findOne().lean();
-    if (!sampleDoc) return res.json({ columnDefs: [], rowData: [], totalCount: 0 });
+    if (!sampleDoc) {
+      return res.json({ columnDefs: [], rowData: [], totalCount: 0 });
+    }
 
+    // Only include searchable top-level fields
     const fields = Object.keys(sampleDoc).filter(
       key =>
         typeof sampleDoc[key] === 'string' ||
@@ -161,31 +165,34 @@ exports.searchGitHubData = async (req, res) => {
         typeof sampleDoc[key] === 'boolean'
     );
 
-    const orQuery = q
-      ? {
-          $or: fields.map(key => ({
-            [key]: { $regex: regex },
-          })),
-        }
-      : {};
+    const orQuery = regex
+    ? {
+        $or: fields
+          .filter((field) => typeof sampleDoc[field] === 'string')
+          .map((field) => ({
+            [field]: { $regex: regex }
+          }))
+      }
+    : {};
+  
 
     const skip = Number(page) * Number(pageSize);
     const limit = Number(pageSize);
 
     const [docs, totalCount] = await Promise.all([
       Model.find(orQuery).skip(skip).limit(limit).lean(),
-      Model.countDocuments(orQuery),
+      Model.countDocuments(orQuery)
     ]);
 
-    const rowData = docs.map(doc => {
+    const rowData = docs.map((doc) => {
       const row = {};
-      fields.forEach(key => {
-        row[key] = doc[key];
+      fields.forEach((field) => {
+        row[field] = doc[field];
       });
       return row;
     });
 
-    const columnDefs = fields.map(field => ({ field }));
+    const columnDefs = fields.map((field) => ({ field }));
 
     res.json({ columnDefs, rowData, totalCount });
   } catch (error) {

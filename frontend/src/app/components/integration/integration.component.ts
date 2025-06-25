@@ -18,6 +18,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { ApiService } from '../../services/api.service';
 import { AgGridModule } from 'ag-grid-angular';
+import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-integration',
@@ -51,6 +52,7 @@ export class IntegrationComponent {
   isConnected = false;
   connectedDate: string | null = null;
   integrationId: string | null = null;
+  public searchSubject = new Subject<string>();
 
   constructor(private api: ApiService) {
     this.api.getIntegrationStatus().subscribe((res : { connected: boolean, date?: string, _id?: string, username?:string }) => {
@@ -66,6 +68,10 @@ export class IntegrationComponent {
     });
   }
   ngOnInit(){
+    this.searchSubject.pipe(debounceTime(400)).subscribe((term) => {
+      this.searchTerm = term;
+      this.searchData(0);
+    });
     if (this.isConnected){
       this.searchData(0);
     }

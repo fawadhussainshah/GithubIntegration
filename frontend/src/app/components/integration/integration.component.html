@@ -42,7 +42,7 @@
                     </div>
                   </mat-panel-title>
                   <mat-panel-description *ngIf="isConnected">
-                    Connected on {{ connectedDate }}
+                    Last Synced: {{ connectedDate| date: "yyyy-MM-dd hh:mm" }} <br>Sync Type: full
                   </mat-panel-description>
                   <mat-panel-description *ngIf="!isConnected">
                     Not connected

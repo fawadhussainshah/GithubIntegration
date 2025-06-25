@@ -165,11 +165,14 @@
             [rowData]="rowData"
             [columnDefs]="columnDefs"
             [defaultColDef]="defaultColDef"
-            [pagination]="true"
             [paginationPageSize]="10"
           >
           </ag-grid-angular>
-
+          <div class="pagination-controls" style="margin-top: 12px; display: flex; justify-content: center; gap: 12px;">
+            <button mat-button (click)="prevPage()" [disabled]="currentPage === 0">Previous</button>
+            <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+            <button mat-button (click)="nextPage()" [disabled]="(currentPage + 1) * paginationPageSize >= totalCount">Next</button>
+          </div>
           </mat-card-content>
         </mat-card>
       </div>

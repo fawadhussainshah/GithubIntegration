@@ -142,7 +142,7 @@ const collectionMap = {
 
 exports.searchGitHubData = async (req, res) => {
   try {
-    const { entity, q } = req.query;
+    const { entity, q = '', page = 0, pageSize = 10 } = req.query;
 
     if (!entity || !collectionMap[entity.toLowerCase()]) {
       return res.status(400).json({ message: 'Invalid or missing entity type' });
@@ -152,19 +152,30 @@ exports.searchGitHubData = async (req, res) => {
     const regex = new RegExp(q, 'i');
 
     const sampleDoc = await Model.findOne().lean();
-    if (!sampleDoc) return res.json({ columnDefs: [], rowData: [] });
+    if (!sampleDoc) return res.json({ columnDefs: [], rowData: [], totalCount: 0 });
 
     const fields = Object.keys(sampleDoc).filter(
-      key => typeof sampleDoc[key] === 'string' || typeof sampleDoc[key] === 'number' || typeof sampleDoc[key] === 'boolean'
+      key =>
+        typeof sampleDoc[key] === 'string' ||
+        typeof sampleDoc[key] === 'number' ||
+        typeof sampleDoc[key] === 'boolean'
     );
 
     const orQuery = q
-      ? fields.map(key => ({
-          [key]: { $regex: regex }
-        }))
-      : [];
+      ? {
+          $or: fields.map(key => ({
+            [key]: { $regex: regex },
+          })),
+        }
+      : {};
 
-    const docs = await Model.find(q ? {  } : {}).limit(10).lean();
+    const skip = Number(page) * Number(pageSize);
+    const limit = Number(pageSize);
+
+    const [docs, totalCount] = await Promise.all([
+      Model.find(orQuery).skip(skip).limit(limit).lean(),
+      Model.countDocuments(orQuery),
+    ]);
 
     const rowData = docs.map(doc => {
       const row = {};
@@ -176,10 +187,9 @@ exports.searchGitHubData = async (req, res) => {
 
     const columnDefs = fields.map(field => ({ field }));
 
-    res.json({ columnDefs, rowData });
+    res.json({ columnDefs, rowData, totalCount });
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ message: 'Search failed' });
   }
 };
-

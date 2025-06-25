@@ -60,14 +60,14 @@ export class IntegrationComponent {
       this.integrationId = res._id ?? null;
       this.userInfo.username =  res.username ?? null;
       if (this.isConnected){
-        this.searchData();
+        this.searchData(0);
       }
 
     });
   }
   ngOnInit(){
     if (this.isConnected){
-      this.searchData();
+      this.searchData(0);
     }
   }
 
@@ -124,7 +124,7 @@ export class IntegrationComponent {
   }
 
   onEntityChange() {
-    this.searchData();
+    this.searchData(0);
   }
 
 
@@ -138,14 +138,34 @@ export class IntegrationComponent {
   };
 
   rowData = [];
+  paginationPageSize = 10;
+  currentPage = 0;
+  totalCount = 0;
 
-
- searchData(){
+ searchData(page: number = 0){
     console.log("selectedEntityMain = ",this.selectedEntity)
-    this.api.search(this.selectedEntity,this.searchTerm).subscribe(resp=>{
+    this.api.search(this.selectedEntity,this.searchTerm,page,this.paginationPageSize).subscribe(resp=>{
       console.log("resp = ",resp);
       this.rowData = resp['rowData'];
       this.columnDefs = resp['columnDefs'];
+      this.totalCount = resp.totalCount;
+      this.currentPage = page;
     })
+  }
+
+  nextPage() {
+    if ((this.currentPage + 1) * this.paginationPageSize < this.totalCount) {
+      this.searchData(this.currentPage + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 0) {
+      this.searchData(this.currentPage - 1);
+    }
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalCount / this.paginationPageSize);
   }
 }

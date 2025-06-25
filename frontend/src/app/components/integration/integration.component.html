@@ -1,0 +1,309 @@
+<div class="app-container">
+    <!-- Header -->
+    <mat-toolbar color="primary" class="app-header">
+      <mat-icon class="header-icon">integration_instructions</mat-icon>
+      <span class="header-title">{{ title }}</span>
+      <span class="spacer"></span>
+      <mat-icon>account_circle</mat-icon>
+    </mat-toolbar>
+  
+    <div class="main-content">
+      <!-- Integration Section -->
+      <div class="integration-section">
+        <mat-card class="integration-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>link</mat-icon>
+              Integrations
+            </mat-card-title>
+          </mat-card-header>
+  
+          <mat-card-content>
+            <mat-accordion>
+              <mat-expansion-panel class="github-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <div class="panel-title-content">
+                      <mat-icon class="github-icon">code</mat-icon>
+                      <span>GitHub Integration</span>
+                      <mat-icon
+                        *ngIf="isConnected"
+                        class="status-icon connected"
+                        matBadgeColor="accent"
+                      >
+                        check_circle
+                      </mat-icon>
+                      <mat-icon
+                        *ngIf="!isConnected"
+                        class="status-icon disconnected"
+                      >
+                        cancel
+                      </mat-icon>
+                    </div>
+                  </mat-panel-title>
+                  <mat-panel-description *ngIf="isConnected">
+                    Connected on {{ connectedDate }}
+                  </mat-panel-description>
+                  <mat-panel-description *ngIf="!isConnected">
+                    Not connected
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+  
+                <!-- Connected State -->
+                <div *ngIf="isConnected" class="connected-content">
+                  <div class="user-info">
+                    <!-- <img
+                      [src]="userInfo.avatar"
+                      alt="User Avatar"
+                      class="user-avatar"
+                    /> -->
+                    <div class="user-details">
+                      <h4>{{ userInfo.username }}</h4>
+                      <mat-chip-set>
+                        <mat-chip color="primary">Connected</mat-chip>
+                      </mat-chip-set>
+                    </div>
+                  </div>
+  
+                  <mat-divider></mat-divider>
+  
+                  <div class="integration-actions">
+                    <button
+                      mat-raised-button
+                      color="warn"
+                      (click)="remove()"
+                    >
+                      <mat-icon>link_off</mat-icon>
+                      Remove Integration
+                    </button>
+                    <!-- <button mat-stroked-button>
+                      <mat-icon>sync</mat-icon>
+                      Sync Data
+                    </button> -->
+                  </div>
+                </div>
+  
+                <!-- Disconnected State -->
+                <div *ngIf="!isConnected" class="disconnected-content">
+                  <div class="connect-prompt">
+                    <mat-icon class="large-icon">link_off</mat-icon>
+                    <h3>Connect to GitHub</h3>
+                    <p>
+                      Connect your GitHub account to start syncing repositories,
+                      commits, issues, and more.
+                    </p>
+  
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      (click)="connect()"
+                      class="connect-button"
+                    >
+                      <mat-icon>link</mat-icon>
+                      Connect to GitHub
+                    </button>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Data Table Section -->
+      <div class="table-section" *ngIf="isConnected">
+        <mat-card class="table-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>table_view</mat-icon>
+              GitHub Data
+            </mat-card-title>
+          </mat-card-header>
+  
+          <mat-card-content>
+            <!-- Filters and Search -->
+            <div class="filters-section">
+              <div class="filter-row">
+                <mat-form-field appearance="outline" class="integration-select">
+                  <mat-label>Active Integration</mat-label>
+                  <mat-select
+                    [(value)]="selectedIntegration"
+                    (selectionChange)="onIntegrationChange()"
+                  >
+                    <mat-option
+                      *ngFor="let integration of activeIntegrations"
+                      [value]="integration"
+                    >
+                      {{ integration }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+  
+                <mat-form-field appearance="outline" class="entity-select">
+                  <mat-label>Entity</mat-label>
+                  <mat-select
+                    [(value)]="selectedEntity"
+                    (selectionChange)="onEntityChange()"
+                  >
+                    <mat-option *ngFor="let entity of entities" [value]="entity">
+                      {{ entity | titlecase }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+  
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Search</mat-label>
+                  <input
+                    matInput
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearch()"
+                    placeholder="Search all fields..."
+                  />
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+              </div>
+            </div>
+  
+            <!-- Data Table -->
+            <div class="table-container">
+              <table
+                mat-table
+                [dataSource]="filteredData"
+                class="data-table"
+                matSort
+              >
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="name-cell">
+                      <mat-icon class="type-icon">{{
+                        element.type === "repository"
+                          ? "folder"
+                          : element.type === "commit"
+                          ? "commit"
+                          : element.type === "pull-request"
+                          ? "merge_type"
+                          : element.type === "issue"
+                          ? "bug_report"
+                          : element.type === "organization"
+                          ? "business"
+                          : "description"
+                      }}</mat-icon>
+                      <span class="name-text">{{ element.name }}</span>
+                    </div>
+                  </td>
+                </ng-container>
+  
+                <!-- Type Column -->
+                <ng-container matColumnDef="type">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+                  <td mat-cell *matCellDef="let element">
+                    <mat-chip-set>
+                      <mat-chip
+                        [color]="
+                          element.type === 'repository'
+                            ? 'primary'
+                            : element.type === 'commit'
+                            ? 'accent'
+                            : ''
+                        "
+                      >
+                        {{ element.type | titlecase }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </td>
+                </ng-container>
+  
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Status
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    <mat-chip-set>
+                      <mat-chip [color]="getStatusColor(element.status)">
+                        {{ element.status | titlecase }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </td>
+                </ng-container>
+  
+                <!-- Created Date Column -->
+                <ng-container matColumnDef="created_at">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Created
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ formatDate(element.created_at) }}
+                  </td>
+                </ng-container>
+  
+                <!-- Updated Date Column -->
+                <ng-container matColumnDef="updated_at">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                    Updated
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ formatDate(element.updated_at) }}
+                  </td>
+                </ng-container>
+  
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let element">
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                      <button mat-menu-item>
+                        <mat-icon>visibility</mat-icon>
+                        <span>View Details</span>
+                      </button>
+                      <button mat-menu-item>
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                      </button>
+                      <button mat-menu-item>
+                        <mat-icon>delete</mat-icon>
+                        <span>Delete</span>
+                      </button>
+                    </mat-menu>
+                  </td>
+                </ng-container>
+  
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              </table>
+            </div>
+  
+            <!-- Pagination -->
+            <mat-paginator
+              [pageSizeOptions]="[5, 10, 20, 50]"
+              showFirstLastButtons
+              class="table-paginator"
+            >
+            </mat-paginator>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Empty State when not connected -->
+      <div class="empty-state" *ngIf="!isConnected">
+        <mat-card class="empty-card">
+          <mat-card-content>
+            <div class="empty-content">
+              <mat-icon class="empty-icon">cloud_off</mat-icon>
+              <h2>No Integration Connected</h2>
+              <p>
+                Connect to GitHub to view and manage your repositories, commits,
+                issues, and more.
+              </p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+  

@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const controller = require('../controllers/github.controller');
+const dataController = require('../controllers/github.data.controller');
 
 const router = express.Router();
 
@@ -14,5 +15,7 @@ router.get('/github/callback', passport.authenticate('github', {
 router.get('/status', controller.getStatus);
 
 router.delete('/integration/:id', controller.removeIntegration);
+router.get('/fetch/orgs', dataController.fetchOrganizations);
+router.get('/fetch/repos', dataController.fetchRepos);
 
 module.exports = router;

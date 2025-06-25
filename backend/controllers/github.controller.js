@@ -23,7 +23,7 @@ exports.getStatus = async (req, res) => {
   try {
     const record = await Integration.findOne({});
     if (record) {
-      res.json({ connected: true, date: record.connectedAt, _id: record._id });
+      res.json({ connected: true, date: record.connectedAt, _id: record._id, username: record.username, githubId: record.githubId });
     } else {
       res.json({ connected: false });
     }

@@ -1,4 +1,5 @@
 const Integration = require('../models/Integration');
+const { syncGitHubData } = require('./github.data.controller');
 
 exports.githubCallback = async (req, res) => {
   try {
@@ -14,6 +15,8 @@ exports.githubCallback = async (req, res) => {
       { upsert: true }
     );
     res.redirect('http://localhost:4200');
+    // syncGitHubData(); // Can be triggered by scheduler or CLI
+
   } catch (err) {
     res.status(500).json({ error: 'Callback error' });
   }

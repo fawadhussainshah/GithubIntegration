@@ -17,6 +17,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { ApiService } from '../../services/api.service';
+import { AgGridModule } from 'ag-grid-angular';
 
 interface GitHubData {
   id: string;
@@ -52,6 +53,7 @@ interface GitHubData {
     MatBadgeModule,
     MatDividerModule,
     MatMenuModule,
+    AgGridModule
   ],
   templateUrl: './integration.component.html',
   styleUrl: './integration.component.scss'
@@ -258,4 +260,23 @@ export class IntegrationComponent {
       minute: '2-digit',
     });
   }
+
+
+  columnDefs:any = [
+    { field: 'make' },
+    { field: 'model' },
+    { field: 'price' },
+  ];
+
+  defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+  };
+
+  rowData = [
+    { make: 'Toyota', model: 'Corolla', price: 35000 },
+    { make: 'Ford', model: 'Fiesta', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 },
+  ];
 }

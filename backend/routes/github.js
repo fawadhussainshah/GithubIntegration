@@ -17,5 +17,7 @@ router.get('/status', controller.getStatus);
 router.delete('/integration/:id', controller.removeIntegration);
 router.get('/fetch/orgs', dataController.fetchOrganizations);
 router.get('/fetch/repos', dataController.fetchRepos);
+router.get('/sync', dataController.syncGit);
+
 
 module.exports = router;

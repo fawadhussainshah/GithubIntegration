@@ -71,9 +71,16 @@ export class IntegrationComponent {
       this.connectedDate = res.date ?? null;
       this.integrationId = res._id ?? null;
       this.userInfo.username =  res.username ?? null;
-      
+      if (this.isConnected){
+        this.searchData();
+      }
 
     });
+  }
+  ngOnInit(){
+    if (this.isConnected){
+      this.searchData();
+    }
   }
 
   connect() {
@@ -129,18 +136,12 @@ export class IntegrationComponent {
   }
 
   onEntityChange() {
-    // Handle entity change
-    // this.filterData();
     this.searchData();
   }
 
 
 
-  columnDefs:any = [
-    { field: 'make' },
-    { field: 'model' },
-    { field: 'price' },
-  ];
+  columnDefs:any = [];
 
   defaultColDef = {
     sortable: true,
@@ -148,11 +149,7 @@ export class IntegrationComponent {
     resizable: true,
   };
 
-  rowData = [
-    { make: 'Toyota', model: 'Corolla', price: 35000 },
-    { make: 'Ford', model: 'Fiesta', price: 32000 },
-    { make: 'Porsche', model: 'Boxster', price: 72000 },
-  ];
+  rowData = [];
 
 
  searchData(){

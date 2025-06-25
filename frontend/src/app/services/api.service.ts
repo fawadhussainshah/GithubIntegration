@@ -23,6 +23,11 @@ export class ApiService {
     return this.http.get<any>('http://localhost:3000/api/github/sync', { withCredentials: true });
   }
 
+  // search(entity: string, q: string,page:number, pageSize:number){
+  //   return this.http.get<any>(`http://localhost:3000/api/github/search?entity=${entity}&q=${q}&page=${page}&pageSize=${pageSize}`, { withCredentials: true });
+  // }
+
+
   search(entity: string, q: string){
     return this.http.get<any>(`http://localhost:3000/api/github/search?entity=${entity}&q=${q}`, { withCredentials: true });
   }

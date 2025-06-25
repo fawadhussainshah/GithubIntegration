@@ -19,18 +19,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ApiService } from '../../services/api.service';
 import { AgGridModule } from 'ag-grid-angular';
 
-interface GitHubData {
-  id: string;
-  name: string;
-  type: string;
-  created_at: string;
-  updated_at: string;
-  status: string;
-  author?: string;
-  repository?: string;
-  organization?: string;
-}
-
 @Component({
   selector: 'app-integration',
   standalone: true,

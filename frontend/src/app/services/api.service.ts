@@ -18,5 +18,13 @@ export class ApiService {
   removeIntegration(id: string) {
     return this.http.delete(`http://localhost:3000/api/github/integration/${id}`, { withCredentials: true });
   }
+
+  sync(){
+    return this.http.get<any>('http://localhost:3000/api/github/sync', { withCredentials: true });
+  }
+
+  search(entity: string, q: string){
+    return this.http.get<any>(`http://localhost:3000/api/github/search?entity=${entity}&q=${q}`, { withCredentials: true });
+  }
   
 }

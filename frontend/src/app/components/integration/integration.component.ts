@@ -70,13 +70,17 @@ export class IntegrationComponent {
       this.isConnected = res.connected;
       this.connectedDate = res.date ?? null;
       this.integrationId = res._id ?? null;
-      this.userInfo.username =  res.username ?? null
+      this.userInfo.username =  res.username ?? null;
+      
 
     });
   }
 
   connect() {
     this.api.connectToGitHub();
+    this.api.sync().subscribe(resp=>{
+      console.log("sync done")
+    })
   }
 
   remove() {
@@ -94,12 +98,8 @@ export class IntegrationComponent {
 
   title = 'GitHub Integration Dashboard';
 
-  // Integration state
-  // isConnected = false;
-  // connectionDate = new Date('2024-01-15T10:30:00');
   userInfo:any = {
     username: 'john-doe',
-    // avatar: '/placeholder.svg?height=40&width=40',
   };
 
   // Dropdown options
@@ -121,145 +121,19 @@ export class IntegrationComponent {
   searchTerm = '';
 
   // Table data
-  displayedColumns: string[] = [
-    'name',
-    'type',
-    'status',
-    'created_at',
-    'updated_at',
-    'actions',
-  ];
 
-  mockData: GitHubData[] = [
-    {
-      id: '1',
-      name: 'awesome-project',
-      type: 'repository',
-      created_at: '2024-01-10T08:00:00Z',
-      updated_at: '2024-01-20T14:30:00Z',
-      status: 'active',
-      author: 'john-doe',
-      organization: 'tech-corp',
-    },
-    {
-      id: '2',
-      name: 'feature/user-auth',
-      type: 'pull-request',
-      created_at: '2024-01-18T09:15:00Z',
-      updated_at: '2024-01-19T16:45:00Z',
-      status: 'open',
-      author: 'jane-smith',
-      repository: 'awesome-project',
-    },
-    {
-      id: '3',
-      name: 'Fix login bug',
-      type: 'commit',
-      created_at: '2024-01-19T11:20:00Z',
-      updated_at: '2024-01-19T11:20:00Z',
-      status: 'merged',
-      author: 'bob-wilson',
-      repository: 'awesome-project',
-    },
-    {
-      id: '4',
-      name: 'Login page not responsive',
-      type: 'issue',
-      created_at: '2024-01-17T13:45:00Z',
-      updated_at: '2024-01-20T10:15:00Z',
-      status: 'closed',
-      author: 'alice-brown',
-      repository: 'awesome-project',
-    },
-    {
-      id: '5',
-      name: 'tech-corp',
-      type: 'organization',
-      created_at: '2023-06-15T12:00:00Z',
-      updated_at: '2024-01-20T09:30:00Z',
-      status: 'active',
-      author: 'admin',
-    },
-  ];
-
-  filteredData: GitHubData[] = [...this.mockData];
-
-  // connectToGitHub() {
-  //   // Simulate connection
-  //   this.isConnected = true;
-  //   this.connectionDate = new Date();
-  // }
-
-  // disconnectFromGitHub() {
-  //   this.isConnected = false;
-  // }
 
   onIntegrationChange() {
     // Handle integration change
-    this.filterData();
+    // this.filterData();
   }
 
   onEntityChange() {
     // Handle entity change
-    this.filterData();
+    // this.filterData();
+    this.searchData();
   }
 
-  onSearch() {
-    this.filterData();
-  }
-
-  filterData() {
-    this.filteredData = this.mockData.filter((item) => {
-      const matchesSearch =
-        !this.searchTerm ||
-        Object.values(item).some((value) =>
-          value
-            ?.toString()
-            .toLowerCase()
-            .includes(this.searchTerm.toLowerCase())
-        );
-
-      const matchesEntity =
-        this.selectedEntity === 'repositories'
-          ? item.type === 'repository'
-          : this.selectedEntity === 'pull-requests'
-          ? item.type === 'pull-request'
-          : this.selectedEntity === 'commits'
-          ? item.type === 'commit'
-          : this.selectedEntity === 'issues'
-          ? item.type === 'issue'
-          : this.selectedEntity === 'organizations'
-          ? item.type === 'organization'
-          : true;
-
-      return matchesSearch && matchesEntity;
-    });
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'active':
-        return 'primary';
-      case 'open':
-        return 'accent';
-      case 'closed':
-        return 'warn';
-      case 'merged':
-        return 'primary';
-      default:
-        return '';
-    }
-  }
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
 
 
   columnDefs:any = [
@@ -279,4 +153,14 @@ export class IntegrationComponent {
     { make: 'Ford', model: 'Fiesta', price: 32000 },
     { make: 'Porsche', model: 'Boxster', price: 72000 },
   ];
+
+
+ searchData(){
+    console.log("selectedEntityMain = ",this.selectedEntity)
+    this.api.search(this.selectedEntity,this.searchTerm).subscribe(resp=>{
+      console.log("resp = ",resp);
+      this.rowData = resp['rowData'];
+      this.columnDefs = resp['columnDefs'];
+    })
+  }
 }

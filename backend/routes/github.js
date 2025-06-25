@@ -18,6 +18,8 @@ router.delete('/integration/:id', controller.removeIntegration);
 router.get('/fetch/orgs', dataController.fetchOrganizations);
 router.get('/fetch/repos', dataController.fetchRepos);
 router.get('/sync', dataController.syncGit);
+router.get('/search', dataController.searchGitHubData);
+
 
 
 module.exports = router;

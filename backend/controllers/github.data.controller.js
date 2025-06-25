@@ -171,3 +171,56 @@ exports.syncGit = async (req, res) => {
   }
 }
 
+
+const collectionMap = {
+  repositories: Repo,
+  commits: Commit,
+  issues: Issue,
+  'pull-requests': PullRequest,
+  changelogs: Changelog,
+  organizations: Organization
+};
+
+exports.searchGitHubData = async (req, res) => {
+  try {
+    const { entity, q } = req.query;
+
+    if (!entity || !collectionMap[entity.toLowerCase()]) {
+      return res.status(400).json({ message: 'Invalid or missing entity type' });
+    }
+
+    const Model = collectionMap[entity.toLowerCase()];
+    const regex = new RegExp(q, 'i');
+
+    const sampleDoc = await Model.findOne().lean();
+    if (!sampleDoc) return res.json({ columnDefs: [], rowData: [] });
+
+    const fields = Object.keys(sampleDoc).filter(
+      key => typeof sampleDoc[key] === 'string' || typeof sampleDoc[key] === 'number' || typeof sampleDoc[key] === 'boolean'
+    );
+
+    const orQuery = q
+      ? fields.map(key => ({
+          [key]: { $regex: regex }
+        }))
+      : [];
+
+    const docs = await Model.find(q ? {  } : {}).limit(10).lean();
+
+    const rowData = docs.map(doc => {
+      const row = {};
+      fields.forEach(key => {
+        row[key] = doc[key];
+      });
+      return row;
+    });
+
+    const columnDefs = fields.map(field => ({ field }));
+
+    res.json({ columnDefs, rowData });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ message: 'Search failed' });
+  }
+};
+
